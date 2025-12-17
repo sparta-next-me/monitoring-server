@@ -2,8 +2,11 @@ package org.nextme.monitoringserver.client;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.nextme.monitoringserver.dto.ContainerMetrics;
 import org.nextme.monitoringserver.dto.NodeMetrics;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -58,6 +61,61 @@ public class PrometheusClient {
 		return metricsList;
 	}
 
+	/*
+	노드 내 모든 컨테이너의 리소스 사용률 조회
+	@param nodeName 노드 이름
+	@return 컨테이너별 메트릭 맵 (컨테이너명 -> 메트릭)
+	 */
+	public Map<String, ContainerMetrics> getContainerMetrics(String nodeName) {
+		log.info("Fetching container metrics for node: {}", nodeName);
+
+		Map<String, ContainerMetrics> containerMetricsMap = new HashMap<>();
+
+		try {
+			// 컨테이너별 CPU 사용률 조회
+			String cpuQuery = String.format(
+				"rate(container_cpu_usage_seconds_total{instance=~\".*%s.*\",container!=\"\",container!=\"POD\"}[5m]) * 100",
+				nodeName
+			);
+
+			JsonNode cpuResponse = executeRangeQuery(cpuQuery);
+
+			if (cpuResponse != null) {
+				JsonNode results = cpuResponse.path("data").path("result");
+
+				for (JsonNode result : results) {
+					String containerName = result.path("metric").path("container").asText();
+
+					if (!containerName.isEmpty()) {
+						Double cpuUsage = 0.0;
+						JsonNode values = result.path("value");
+						if (values.size() > 1) {
+							cpuUsage = Double.parseDouble(values.get(1).asText());
+						}
+
+						// 메모리 사용률 조회
+						Double memoryUsageMB = queryContainerMemory(nodeName, containerName);
+
+						ContainerMetrics metrics = ContainerMetrics.builder()
+							.containerName(containerName)
+							.cpuUsage(cpuUsage)
+							.memoryUsageMB(memoryUsageMB)
+							.build();
+
+						containerMetricsMap.put(containerName, metrics);
+					}
+				}
+			}
+
+			log.info("Found {} containers", containerMetricsMap.size());
+
+		} catch (Exception e) {
+			log.error("Failed to fetch container metrics", e);
+		}
+
+		return containerMetricsMap;
+	}
+
 	// CPU Usage 조회
 	private Double queryCpuUsage(String nodeName, Instant timestamp) {
 		String query = String.format(
@@ -83,6 +141,35 @@ public class PrometheusClient {
 			nodeName, nodeName
 		);
 		return executeQuery(query, timestamp);
+	}
+
+	// 특정 컨테이너의 메모리 사용량 조회
+	private Double queryContainerMemory(String nodeName, String containerName) {
+		String query = String.format(
+			"container_memory_usage_bytes{instance=~\".*%s.*\",container=\"%s\"} / 1024 / 1024",
+			nodeName, containerName
+		);
+
+		Double memoryMB = executeQuery(query, Instant.now());
+		return memoryMB != null ? memoryMB : 0.0;
+	}
+
+	// Range Query 실행
+	private JsonNode executeRangeQuery(String query) {
+		try {
+			return webClient.get()
+				.uri(uriBuilder -> uriBuilder
+					.path("/api/v1/query")
+					.queryParam("query", query)
+					.build())
+				.retrieve()
+				.bodyToMono(JsonNode.class)
+				.block();
+
+		} catch (Exception e) {
+			log.warn("Failed to execute range query: {}", query, e);
+			return null;
+		}
 	}
 
 	// Prometheus API 쿼리 실행
