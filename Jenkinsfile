@@ -79,7 +79,6 @@ pipeline {
                         docker run -d --name ${CONTAINER_NAME} \\
                           -e EUREKA_INSTANCE_HOSTNAME='10.178.0.4' \\
                           --env-file \${ENV_FILE} \\
-                          -e JAVA_TOOL_OPTIONS="${JAVA_TZ_OPTS}" \\
                           -p ${HOST_PORT}:${CONTAINER_PORT} \\
                           ${FULL_IMAGE}
                     """
