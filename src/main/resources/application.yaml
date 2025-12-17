@@ -1,53 +1,6 @@
 spring:
   application:
-    name: product-service
-  config:
-    import: 'optional:configserver:'
-  # 1. H2 데이터베이스 설정
-  datasource:
-    url: jdbc:postgresql://34.22.87.75:4020/nextme_db
-    username: nextme
-    password: _aA123456
-    hikari:
-      maximum-pool-size: 5       # 풀 최대 커넥션 수
-      minimum-idle: 1            # 최소 idle 커넥션
-      idle-timeout: 300000       # 5분 (ms) - idle 커넥션 정리
-      max-lifetime: 1800000      # 30분 (ms) - 커넥션 재생성 주기
-      connection-timeout: 30000  # 30초 (ms) - 커넥션 못 얻으면 실패
-      pool-name: product-service-hikari
-      leak-detection-threshold: 20000 # 20초 이상 반환 안 하면 누수 의심 로그
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: productservice
-
-  flyway:
-    enabled: true
-    schemas: productservice
-    default-schema: productservice
-    baseline-on-migrate: true
-
-  kafka:
-    bootstrap-servers: 34.22.87.75:9092 # Kafka 브로커 주소 (환경에 맞게 변경)
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer # 객체를 JSON으로 직렬화
-      properties:
-        spring.json.add.type.headers: true
-#    consumer:
-#      group-id: reservation-group-new # 컨슈머 그룹 ID (각 서비스에 맞게 고유하게 설정)
-#      auto-offset-reset: latest
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer # JSON을 객체로 역직렬화
-#      properties:
-#        # 역직렬화 시 사용할 클래스 정보를 설정 (없으면 에러 발생 가능)
-#        spring.json.trusted.packages: "*"
-#        spring.json.value.default.type: org.nextme.common.event.PaymentConfirmedEvent
-#        spring.json.type.precedence: default
+    name: monitoring-server
 
 eureka:
   instance:
@@ -58,8 +11,6 @@ eureka:
     service-url:
       defaultZone: ${EUREKA_DEFAULT_ZONE}
 
-
-# OPEN DOC API 설정
 springdoc:
   version: '1.0.0'
   api-docs:
@@ -76,10 +27,4 @@ springdoc:
     - /**
 
 server:
-  servlet:
-    encoding:
-      charset: utf-8
-      enabled: true
-      force: true
-
-  port: 11117
+  port: 11118

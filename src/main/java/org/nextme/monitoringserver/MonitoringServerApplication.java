@@ -1,13 +1,13 @@
-package org.nextme.product_service;
+package org.nextme.monitoringserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DefaultServerApplication {
+public class MonitoringServerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DefaultServerApplication.class, args);
+		SpringApplication.run(MonitoringServerApplication.class, args);
 	}
 
 }

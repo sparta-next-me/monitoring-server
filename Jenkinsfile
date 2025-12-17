@@ -1,15 +1,15 @@
 pipeline {
     agent any
     environment {
-        APP_NAME        = "product-service"
+        APP_NAME        = "monitoring-server"
         // GHCR 레지스트리 정보
         REGISTRY        = "ghcr.io"
         GH_OWNER        = "sparta-next-me"
-        IMAGE_REPO      = "product-service"
+        IMAGE_REPO      = "monitoring-server"
         FULL_IMAGE      = "${REGISTRY}/${GH_OWNER}/${IMAGE_REPO}:latest"
-        CONTAINER_NAME  = "product-service"
-        HOST_PORT       = "11117"
-        CONTAINER_PORT  = "11117"
+        CONTAINER_NAME  = "monitoring-server"
+        HOST_PORT       = "11118"
+        CONTAINER_PORT  = "11118"
     }
     stages {
         stage('Checkout') {
@@ -20,7 +20,7 @@ pipeline {
         stage('Build & Test') {
             steps {
                 withCredentials([
-                    file(credentialsId: 'payment-env', variable: 'ENV_FILE')
+                    file(credentialsId: 'promotion-env', variable: 'ENV_FILE')
                 ]) {
                     sh '''
                       # 환경 파일 존재 확인
@@ -64,7 +64,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 withCredentials([
-                    file(credentialsId: 'payment-env', variable: 'ENV_FILE')
+                    file(credentialsId: 'promotion-env', variable: 'ENV_FILE')
                 ]) {
                     sh """
                       # 기존 컨테이너 있으면 정지/삭제
@@ -74,11 +74,14 @@ pipeline {
                         docker rm ${CONTAINER_NAME} || true
                         docker rmi ${FULL_IMAGE} || true
                       fi
-                      echo "Starting new product-service container..."
-                      docker run -d --name ${CONTAINER_NAME} \\
-                        --env-file \${ENV_FILE} \\
-                        -p ${HOST_PORT}:${CONTAINER_PORT} \\
-                        ${FULL_IMAGE}
+
+                      echo "Starting new user-service container..."
+                        docker run -d --name ${CONTAINER_NAME} \\
+                          -e EUREKA_INSTANCE_HOSTNAME='10.178.0.4' \\
+                          --env-file \${ENV_FILE} \\
+                          -e JAVA_TOOL_OPTIONS="${JAVA_TZ_OPTS}" \\
+                          -p ${HOST_PORT}:${CONTAINER_PORT} \\
+                          ${FULL_IMAGE}
                     """
                 }
             }
