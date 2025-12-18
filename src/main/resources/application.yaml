@@ -2,6 +2,20 @@ spring:
   application:
     name: monitoring-server
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        model: gpt-4o-mini
+        options:
+          temperature: 0.3
+
 eureka:
   instance:
     prefer-ip-address: true
@@ -10,6 +24,13 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: ${EUREKA_URL}
+
+prometheus:
+  url: ${PROMETHEUS_URL}
+
+notification:
+  slack:
+    user-ids: ${SLACK_USER_ID}
 
 springdoc:
   version: '1.0.0'
