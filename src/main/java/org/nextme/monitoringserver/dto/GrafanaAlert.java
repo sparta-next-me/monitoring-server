@@ -3,11 +3,13 @@ package org.nextme.monitoringserver.dto;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GrafanaAlert {
 
 	private String receiver;
@@ -27,6 +29,7 @@ public class GrafanaAlert {
 	private String externalURL;
 
 	@Data
+	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class Alert {
 		private String status;
 		private Map<String, String> labels;
