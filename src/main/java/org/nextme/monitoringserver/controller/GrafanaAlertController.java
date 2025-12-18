@@ -191,12 +191,22 @@ public class GrafanaAlertController {
 	 * Kafka로 알림 발송
 	 */
 	private void sendNotification(String nodeName, String alertName, String analysis) {
-		String message = String.format(
-				"🚨 *노드 알림: %s*\n\n" +
-						"*Alert:* %s\n\n" +
-						"*AI 분석 결과:*\n%s",
-				nodeName, alertName, analysis
-		);
+		// Manual Analysis는 alert name을 표시하지 않음
+		String message;
+		if ("Manual Analysis".equals(alertName)) {
+			message = String.format(
+					"🚨 *노드 알림: %s*\n\n" +
+							"*AI 분석 결과:*\n%s",
+					nodeName, analysis
+			);
+		} else {
+			message = String.format(
+					"🚨 *노드 알림: %s*\n\n" +
+							"*Alert:* %s\n\n" +
+							"*AI 분석 결과:*\n%s",
+					nodeName, alertName, analysis
+			);
+		}
 
 		MonitoringNotificationEvent event = new MonitoringNotificationEvent(
 				slackUserIds,

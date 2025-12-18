@@ -126,16 +126,21 @@ public class AIAnalyzer {
 		sb.append("6. 권장 조치 사항 (문제 서비스가 특정된 경우 해당 서비스에 대한 조치 포함)\n\n");
 		sb.append("**응답 형식 :**\n");
 		sb.append("다음 형식으로 작성하되, 마크다운 기호(#, *, -, >, 등) 없이 일반 텍스트로 작성하세요:\n\n");
+		sb.append("[서비스별 리소스 현황]\n");
+		sb.append("각 서비스를 한 줄씩 'ㆍ서비스명: CPU 0.00%, 메모리 000 MB' 형식으로 표시\n");
+		sb.append("예시:\n");
+		sb.append("ㆍusergoal-service: CPU 0.41%, 메모리 145.29 MB\n");
+		sb.append("ㆍpromotion-service: CPU 0.31%, 메모리 122.10 MB\n\n");
 		sb.append("[현재 상황]\n");
 		sb.append("메모리/CPU/디스크 사용률 판단\n\n");
 		sb.append("[과거 추세]\n");
 		sb.append("6시간 동안의 변화 설명\n\n");
-		sb.append("[서비스별 분석]\n");
-		sb.append("가장 많이 사용하는 서비스와 사용량 명시\n\n");
+		sb.append("[원인 분석]\n");
+		sb.append("서비스별 현황을 보고 리소스를 가장 많이 사용하는 서비스 특정 및 원인 분석\n\n");
 		sb.append("[예상 리스크]\n");
 		sb.append("1시간 후 예측\n\n");
 		sb.append("[권장 조치]\n");
-		sb.append("구체적인 조치 사항\n");
+		sb.append("구체적인 조치 사항 (문제 서비스가 있다면 해당 서비스에 대한 조치 포함)\n");
 
 		return sb.toString();
 	}
