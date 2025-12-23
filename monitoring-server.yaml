@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-server
+  namespace: next-me
+  labels:
+    app: monitoring-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring-server
+  template:
+    metadata:
+      labels:
+        app: monitoring-server
+    spec:
+      imagePullSecrets:
+        - name: ghcr-cred
+      containers:
+        - name: monitoring-server
+          image: ghcr.io/sparta-next-me/monitoring-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 11118
+          envFrom:
+            - secretRef:
+                name: promotion-env
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: JAVA_OPTS
+              value: "-Xms512m -Xmx768m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 11118
+            initialDelaySeconds: 120
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 11118
+            initialDelaySeconds: 180
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitoring-server
+  namespace: next-me
+spec:
+  selector:
+    app: monitoring-server
+  ports:
+    - name: http
+      port: 11118
+      targetPort: 11118
+      nodePort: 31118 # 외부 접속용 포트
+  type: NodePort
